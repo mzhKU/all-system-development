@@ -1,0 +1,5 @@
+<configuration xmlns="http://jgitver.github.io/maven/configuration/1.1.0">
+    <strategy>CONFIGURABLE</strategy>
+    <nonQualifierBranches>main,master</nonQualifierBranches>
+    <useSnapshot>true</useSnapshot>
+</configuration>
