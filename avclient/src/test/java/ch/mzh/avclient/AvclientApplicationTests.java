@@ -15,7 +15,7 @@ class AvclientApplicationTests {
 	private static RestClient restClient;
 
 	// This matches the name defined in the Kubernetes Deployment 'env' section
-	@Value("${API_KEY:invalid_key}")
+	@Value("${AV_CLIENT_SECRET:invalid_key}")
 	private String apiKey;
 
 	@BeforeAll

@@ -1,0 +1,80 @@
+name: Jib Build Docker
+
+run-name: "Github actor ${{ github.actor }}"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-docker-image-and-apply-version-tag-to-infra-manifests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout application repo
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Get image version
+        working-directory: avclient
+        id: get_version
+        run: |
+          VERSION=$(mvn help:evaluate \
+            -Dexpression=project.version -q -DforceStdout)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "### JGITVER CALCULATED VERSION: " $VERSION " ###"
+
+      - name: Build and push image with Jib
+        working-directory: avclient
+        run: |
+          mvn package com.google.cloud.tools:jib-maven-plugin:3.4.0:build \
+            -Djib.to.image=ghcr.io/mzhku/av-client \
+            -Djib.to.tags=${{ steps.get_version.outputs.version }} \
+            -Djib.to.auth.username=${{ github.actor }} \
+            -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }} \
+            -Djib.from.image=eclipse-temurin:17-jre-alpine \
+            -DskipTests \
+            -no-transfer-progress
+
+      - name: Checkout infra repo
+        uses: actions/checkout@v5
+        with:
+          repository: mzhKU/all-system-operation
+          ssh-key: ${{ secrets.INFRA_REPO_DEPLOY_KEY }}
+          path: infra
+
+      - name: Update image tag in values-ci.yaml
+        run: |
+          cat > infra/kubernetes/values-ci.yaml << EOF
+          image:
+            tag: "${{ steps.get_version.outputs.version }}"
+          EOF
+
+      - name: Commit and push new tag to infra repo
+        working-directory: infra
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add kubernetes/values-ci.yaml
+          if ! git diff --quiet --exit-code --cached; then
+            git commit -m "ci: update av-client image tag to ${{ steps.get_version.outputs.version }}"
+            git push
+          else
+            echo "No changes to commit"
+          fi
