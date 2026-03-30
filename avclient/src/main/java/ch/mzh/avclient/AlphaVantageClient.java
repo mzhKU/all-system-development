@@ -29,7 +29,7 @@ public class AlphaVantageClient implements CommandLineRunner {
     @Value("${AV_CLIENT_SECRET:invalid_key}")
     private String apiKey;
 
-    @Value("mockRequest")
+    @Value("${realRequest}")
     private Boolean realRequest;
 
     public static void main(String[] args) {
