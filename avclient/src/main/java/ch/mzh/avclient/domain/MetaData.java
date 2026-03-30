@@ -2,6 +2,7 @@ package ch.mzh.avclient.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.TimeZone;
@@ -22,4 +23,7 @@ public class MetaData {
 
     @JsonProperty("5. Time Zone")
     private String timeZone;
+
+    public MetaData(String info, String symb, LocalDate of, String outputSize, String cet) {
+    }
 }

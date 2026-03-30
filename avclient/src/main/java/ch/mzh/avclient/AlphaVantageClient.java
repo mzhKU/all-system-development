@@ -2,6 +2,7 @@ package ch.mzh.avclient;
 
 
 import ch.mzh.avclient.domain.DailyTimeSeries;
+import ch.mzh.avclient.domain.MetaData;
 import ch.mzh.avclient.domain.OpenHighLowCloseVolume;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestClient;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Map.Entry;
 
 @SpringBootApplication
@@ -25,6 +28,9 @@ public class AlphaVantageClient implements CommandLineRunner {
     // This matches the name defined in the Kubernetes Deployment 'env' section
     @Value("${AV_CLIENT_SECRET:invalid_key}")
     private String apiKey;
+
+    @Value("mockRequest")
+    private Boolean realRequest;
 
     public static void main(String[] args) {
         SpringApplication.run(AlphaVantageClient.class, args);
@@ -39,17 +45,29 @@ public class AlphaVantageClient implements CommandLineRunner {
                 .build();
 
         try {
-            DailyTimeSeries dailyTimeSeries = restClient
-                    .get()
-                    .uri(uriBuilder ->
-                            uriBuilder
-                                    .path("/query")
-                                    .queryParam("function", "TIME_SERIES_DAILY")
-                                    .queryParam("symbol", "IBM")
-                                    .queryParam("apikey", apiKey)
-                                    .build())
-                    .retrieve()
-                    .body(DailyTimeSeries.class);
+            DailyTimeSeries dailyTimeSeries;
+            if (realRequest) {
+                dailyTimeSeries = restClient
+                        .get()
+                        .uri(uriBuilder ->
+                                uriBuilder
+                                        .path("/query")
+                                        .queryParam("function", "TIME_SERIES_DAILY")
+                                        .queryParam("symbol", "IBM")
+                                        .queryParam("apikey", apiKey)
+                                        .build())
+                        .retrieve()
+                        .body(DailyTimeSeries.class);
+            } else {
+                logger.info("USING MOCK TIMESERIES");
+                dailyTimeSeries = new DailyTimeSeries(
+                        new MetaData("Info", "SYMB", LocalDate.of(2026, 1, 1), "Output Size", "CET"),
+                        Map.of(
+                            LocalDate.of(2026, 1, 1),
+                            new OpenHighLowCloseVolume(1.0, 2.0, 1.4, 1.2, 10)
+                    )
+                );
+            }
 
             if (dailyTimeSeries != null && dailyTimeSeries.dailyTimeSeries() != null) {
                 for (Entry<java.time.LocalDate, OpenHighLowCloseVolume> entry : dailyTimeSeries.dailyTimeSeries().entrySet()) {
