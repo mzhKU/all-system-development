@@ -61,7 +61,7 @@ jobs:
 
       - name: Update image tag in values-ci.yaml
         run: |
-          cat > infra/kubernetes/values-ci.yaml << EOF
+          cat > infra/kubernetes/values-dev-ci.yaml << EOF
           image:
             tag: "${{ steps.get_version.outputs.version }}"
           EOF
