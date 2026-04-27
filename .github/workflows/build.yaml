@@ -62,8 +62,8 @@ jobs:
       - name: Update image tag in values-ci.yaml
         run: |
           cat > infra/kubernetes/apps/av-client/dev-values-ci.yaml << EOF
-          image:
-            tag: "${{ steps.get_version.outputs.version }}"
+          avClientImage: "ghcr.io/mzhku/av-client"
+          avClientImageTag: "${{ steps.get_version.outputs.version }}"
           EOF
 
       - name: Commit and push new tag to infra repo
