@@ -19,6 +19,7 @@ import java.util.Map;
 public class AvController {
 
     private static final Logger logger = LoggerFactory.getLogger(AlphaVantageClient.class);
+    private static String AV_BASE_URL = "https://www.alphavantage.co/";
 
     // This matches the name defined in the Kubernetes Deployment 'env' section
     @Value("${AV_CLIENT_SECRET:invalid_key}")
@@ -31,15 +32,27 @@ public class AvController {
     public void getDailyTimeSeries() {
         logger.info("Starting API request with key: {}", apiKey);
 
-        RestClient restClient = RestClient.builder().baseUrl("https://www.alphavantage.co/").build();
+        RestClient restClient = RestClient.builder().baseUrl(AV_BASE_URL).build();
 
         try {
             DailyTimeSeries dailyTimeSeries;
             if (realRequest) {
-                dailyTimeSeries = restClient.get().uri(uriBuilder -> uriBuilder.path("/query").queryParam("function", "TIME_SERIES_DAILY").queryParam("symbol", "IBM").queryParam("apikey", apiKey).build()).retrieve().body(DailyTimeSeries.class);
+                dailyTimeSeries = restClient
+                        .get()
+                        .uri(uriBuilder -> uriBuilder
+                                .path("/query")
+                                .queryParam("function", "TIME_SERIES_DAILY")
+                                .queryParam("symbol", "IBM")
+                                .queryParam("apikey", apiKey)
+                                .build())
+                        .retrieve()
+                        .body(DailyTimeSeries.class);
             } else {
                 logger.info("USING MOCK TIMESERIES");
-                dailyTimeSeries = new DailyTimeSeries(new MetaData("Info", "SYMB", LocalDate.of(2026, 1, 1), "Output Size", "CET"), Map.of(LocalDate.of(2026, 1, 1), new OpenHighLowCloseVolume(1.0, 2.0, 1.4, 1.2, 10)));
+                LocalDate queryDate = LocalDate.of(2026, 1, 1);
+                OpenHighLowCloseVolume mockResponse = new OpenHighLowCloseVolume(1.0, 2.0, 1.4, 1.2, 10);
+                MetaData mockMetaData = new MetaData("Info","SYMB",queryDate,"Output Size","CET");
+                dailyTimeSeries = new DailyTimeSeries(mockMetaData, Map.of(queryDate, mockResponse));
             }
 
             if (dailyTimeSeries != null && dailyTimeSeries.dailyTimeSeries() != null) {
