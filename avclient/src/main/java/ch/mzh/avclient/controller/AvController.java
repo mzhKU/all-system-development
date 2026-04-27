@@ -67,5 +67,6 @@ public class AvController {
         }
 
         logger.info("AlphaVantage Client initialization logic complete.");
+        // some change
     }
 }
