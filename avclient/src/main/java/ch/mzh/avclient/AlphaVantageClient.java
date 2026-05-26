@@ -38,6 +38,6 @@ public class AlphaVantageClient {
 
     @Scheduled(fixedRate = 5000)
     public void reportCurrentTime() {
-        logger.info("Pod Heartbeat: AlphaVantage Client is alive at {}", LocalDateTime.now());
+        logger.info("AV {}", LocalDateTime.now());
     }
 }
