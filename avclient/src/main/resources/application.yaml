@@ -6,3 +6,11 @@ realRequest: false
 
 server:
   port: 9090
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include=*
+  health:
+    show-details: always
