@@ -5,7 +5,7 @@ spring:
 realRequest: false
 
 server:
-  port: 9090
+  port: 9091
 
 management:
   endpoints:
