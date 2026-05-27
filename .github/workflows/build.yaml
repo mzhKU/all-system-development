@@ -32,24 +32,25 @@ jobs:
           cache: maven
 
       - name: Get image version
-        working-directory: avclient
+        working-directory: .
         id: get_version
         run: |
-          VERSION=$(mvn help:evaluate \
-            -Dexpression=project.version -q -DforceStdout)
+          # Added 'clean' to ensure a fresh build context for version evaluation
+          mvn clean help:evaluate -Dexpression=project.version -q -DforceStdout        
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "### JGITVER CALCULATED VERSION: " $VERSION " ###"
 
       - name: Build and push image with Jib
-        working-directory: avclient
+        working-directory: . 
         run: |
           mvn package com.google.cloud.tools:jib-maven-plugin:3.4.0:build \
-            -Djib.to.image=ghcr.io/mzhku/av-client \
-            -Djib.to.tags=${{ steps.get_version.outputs.version }} \
-            -Djib.to.auth.username=${{ github.actor }} \
-            -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }} \
-            -Djib.from.image=eclipse-temurin:17-jre-alpine \
-            -DskipTests \
+            -Djib.to.image=ghcr.io/mzhku/av-client                        \
+            -Djib.to.tags=${{ steps.get_version.outputs.version }}        \
+            -Djib.to.auth.username=${{ github.actor }}                    \
+            -Djib.to.auth.password=${{ secrets.GITHUB_TOKEN }}            \
+            -Djib.from.image=eclipse-temurin:17-jre-alpine                \
+            -DskipTests                                                   \
             -no-transfer-progress
 
       - name: Checkout infra repo
