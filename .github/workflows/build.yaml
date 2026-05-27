@@ -35,16 +35,15 @@ jobs:
         working-directory: .
         id: get_version
         run: |
-          # Added 'clean' to ensure a fresh build context for version evaluation
-          mvn clean help:evaluate -Dexpression=project.version -q -DforceStdout        
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          VERSION=$(git describe --tags --always)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "### JGITVER CALCULATED VERSION: " $VERSION " ###"
+          echo "### VERSION: $VERSION ###"
 
       - name: Build and push image with Jib
         working-directory: . 
         run: |
           mvn package com.google.cloud.tools:jib-maven-plugin:3.4.0:build \
+            -Drevision=${{ steps.get_version.outputs.version }}           \
             -Djib.to.image=ghcr.io/mzhku/av-client                        \
             -Djib.to.tags=${{ steps.get_version.outputs.version }}        \
             -Djib.to.auth.username=${{ github.actor }}                    \

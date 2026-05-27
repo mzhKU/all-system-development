@@ -12,11 +12,12 @@
 
 	<groupId>ch.mzh</groupId>
 	<artifactId>avclient</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${revision}</version>
 	<name>avclient</name>
 	<description>AlphaVantage Client</description>
 
 	<properties>
+		<revision>0.0.0-SNAPSHOT</revision>
 		<java.version>17</java.version>
 		<jib.version>3.4.0</jib.version>
 		<jackson.version>2.17.2</jackson.version>
@@ -112,13 +113,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>fr.brouillard.oss</groupId>
-				<artifactId>jgitver-maven-plugin</artifactId>
-				<version>1.9.0</version>
-				<extensions>true</extensions>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
