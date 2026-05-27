@@ -14,6 +14,7 @@ import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 public class AvController {
@@ -29,7 +30,7 @@ public class AvController {
     private Boolean realRequest;
 
     @GetMapping("/daily")
-    public void getDailyTimeSeries() {
+    public ResponseEntity<DailyTimeSeries> getDailyTimeSeries() {
         logger.info("Starting API request with key: {}", apiKey);
 
         RestClient restClient = RestClient.builder().baseUrl(AV_BASE_URL).build();
@@ -62,11 +63,13 @@ public class AvController {
             } else {
                 logger.warn("Received empty response from AlphaVantage API.");
             }
+            return ResponseEntity.ok(dailyTimeSeries);
         } catch (Exception e) {
             logger.error("Failed to fetch data from API: {}", e.getMessage());
         }
 
         logger.info("AlphaVantage Client initialization logic complete.");
         // some change
+        return ResponseEntity.ok(new DailyTimeSeries(null, null));
     }
 }
