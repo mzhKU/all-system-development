@@ -11,6 +11,9 @@ management:
   endpoints:
     web:
       exposure:
-        include=*
+        include:
+          - health
+          - info
+          - prometheus
   health:
     show-details: always
