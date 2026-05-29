@@ -29,6 +29,11 @@ public class AvController {
     @Value("${realRequest}")
     private Boolean realRequest;
 
+    @GetMapping("/error")
+    public void error() {
+        throw new RuntimeException("HTTP 500");
+    }
+
     @GetMapping("/daily")
     public ResponseEntity<DailyTimeSeries> getDailyTimeSeries() {
         logger.info("Starting API request with key: {}", apiKey);
