@@ -36,15 +36,21 @@ jobs:
         run: |
           VERSION=$(git describe --tags --exact-match 2>/dev/null)
           if [ -z "$VERSION" ]; then
-            echo "ERROR: No tag found on HEAD. Tag main before merging." >&2
-            exit 1
+            echo "::notice::No tag on HEAD — skipping build (not a release commit)"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
           if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "ERROR: Tag '$VERSION' is not semver (expected vX.Y.Z)" >&2
-            exit 1
+            echo "::notice::Tag '$VERSION' is not semver — skipping build"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
           fi
+          echo "skip=false" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "### VERSION: $VERSION ###"
+
+      - name: Cancel if no version
+        if: steps.get_version.outputs.skip == 'true'
+        uses: andymckay/cancel-action@0.5
 
       - name: Run unit tests
         id: unit_tests
@@ -80,7 +86,7 @@ jobs:
 
       - name: Update image tag in values-ci.yaml
         run: |
-          cat > infra/kubernetes/apps/av-client/dev-values-ci.yaml << EOF
+          cat > infra/kubernetes/releases/av-client/dev-values-ci.yaml << EOF
           avClientImage: "ghcr.io/mzhku/av-client"
           avClientImageTag: "${{ steps.get_version.outputs.version }}"
           EOF
@@ -90,7 +96,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add kubernetes/apps/av-client/dev-values-ci.yaml
+          git add kubernetes/releases/av-client/dev-values-ci.yaml
           if ! git diff --quiet --exit-code --cached; then
             git commit -m "ci: update av-client image tag to ${{ steps.get_version.outputs.version }}"
             git push
