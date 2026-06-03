@@ -1,0 +1,24 @@
+
+
+spring:
+  application:
+    name: avclient
+
+
+
+server:
+  port: 9091
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - prometheus
+  health:
+    show-details: always
+
+realRequest: false

@@ -29,7 +29,7 @@ public class AvController {
     @Value("${realRequest}")
     private Boolean realRequest;
 
-    @GetMapping("/error")
+    @GetMapping("/test-error")
     public void error() {
         throw new RuntimeException("HTTP 500");
     }

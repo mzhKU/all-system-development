@@ -48,16 +48,18 @@ jobs:
 
       - name: Run unit tests
         id: unit_tests
+        working-directory: av-client
         run: |
           mvn test
 
       - name: Run integration tests
         id: integration_tests
+        working-directory: av-client
         run: |
           mvn verify
 
       - name: Build and push image with Jib
-        working-directory: . 
+        working-directory: av-client
         run: |
           mvn package com.google.cloud.tools:jib-maven-plugin:3.4.0:build \
             -Drevision=${{ steps.get_version.outputs.version }}           \
