@@ -1,0 +1,42 @@
+name: Promotion job
+
+on:
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout infra repository
+        uses: actions/checkout@v5
+        with:
+          repository: mzhKU/all-system-operation
+          ssh-key: ${{ secrets.INFRA_REPO_DEPLOY_KEY }}
+          path: infra
+
+      - name: Read values-ci file
+        id: read_version
+        run: |
+          VERSION=$(grep -i "tag" kubernetes/apps/av-client/values-dev-ci.yaml | cut -d ":" -f 2 | cut -d "\"" -f 2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "### VALUES-DEV-CI version: " $VERSION " ###"
+
+      - name: Write tag to values-ci-<ENV>-<CLIENT> file
+        run: |
+          cat > infra/kubernetes/apps/av-client/values-ci-<ENV>-<CLIENT>.yaml << EOF
+          image:
+            tag: "${{ steps.read_version.outputs.version }}
+          EOF
+
+      - name: Commit and push new tag to infra repo
+        working-directory: infra
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add kubernetes/values-<ENV>-<CLIENT>-ci.yaml
+          if ! git diff --quiet --exit-code --cached; then
+            git commit -m "ci: update av-client image tag to ${{ steps.read_version.outputs.version }}"
+            git push
+          else
+            echo "No changes to commit"
+          fi
