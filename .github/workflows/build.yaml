@@ -42,7 +42,6 @@ jobs:
           if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "ERROR: Tag '$VERSION' is not semver (expected vX.Y.Z)" >&2
             exit 1
-          fi            
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "### VERSION: $VERSION ###"
