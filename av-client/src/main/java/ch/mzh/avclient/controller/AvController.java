@@ -31,6 +31,7 @@ public class AvController {
 
     @GetMapping("/test-error")
     public void error() {
+        // comment
         throw new RuntimeException("HTTP 500");
     }
 
