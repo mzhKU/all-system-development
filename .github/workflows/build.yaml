@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - feat*
+      - main
   workflow_dispatch:
 
 jobs:
