@@ -19,6 +19,8 @@ class AvControllerIT {
     @Autowired
     private MockMvc mockMvc;
 
+    private int test;
+
     @Test
     void dailyEndpointReturnsMockTimeSeries() throws Exception {
         mockMvc.perform(get("/daily"))
