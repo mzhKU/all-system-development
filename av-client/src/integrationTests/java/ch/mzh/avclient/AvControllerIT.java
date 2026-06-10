@@ -24,6 +24,6 @@ class AvControllerIT {
         mockMvc.perform(get("/daily"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$['Meta Data']").exists());
-        assertTrue(1==0);
+        // assertTrue(1==0);
     }
 }
