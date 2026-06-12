@@ -5,7 +5,7 @@ run-name: "Github actor ${{ github.actor }} to target ${{ inputs.deploy_target }
 on:
   pull_request:
     branches:
-      - main
+      - main # Run pipeline whenever a PR targets 'main'
   push:
     tags:
       - 'v*.*.*'
