@@ -19,11 +19,14 @@ class AvControllerIT {
     @Autowired
     private MockMvc mockMvc;
 
+    private int test;
+
     @Test
     void dailyEndpointReturnsMockTimeSeries() throws Exception {
-        // mockMvc.perform(get("/daily"))
-        //         .andExpect(status().isOk())
-        //         .andExpect(jsonPath("$['Meta Data']").exists());
-        assertTrue(1==0);
+        // comment
+        mockMvc.perform(get("/daily"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$['Meta Data']").exists());
+        // assertTrue(1==0);
     }
 }
