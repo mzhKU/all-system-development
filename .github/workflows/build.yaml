@@ -105,7 +105,7 @@ jobs:
       - name: Update image tag in values-ci.yaml
         if: startsWith(github.ref, 'refs/tags/')
         run: |
-          cat > infra/kubernetes/releases/av-client/dev-values-ci.yaml << EOF
+          cat > infra/kubernetes/releases/av-client/staging-values-ci.yaml << EOF
           avClientImage: "ghcr.io/mzhku/av-client"
           avClientImageTag: "${{ steps.get_version.outputs.version }}"
           EOF
@@ -116,7 +116,7 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
-          git add kubernetes/releases/av-client/dev-values-ci.yaml
+          git add kubernetes/releases/av-client/staging-values-ci.yaml
           if ! git diff --quiet --exit-code --cached; then
             git commit -m "ci: update av-client image tag to ${{ steps.get_version.outputs.version }}"
             git push
