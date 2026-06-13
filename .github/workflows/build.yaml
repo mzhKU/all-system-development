@@ -39,6 +39,14 @@ jobs:
           cache: maven
 
       - name: Get image version
+        # 'refs/tags': is a builtin variable that contains the git
+        #              reference of the event that triggered the run.
+        # PR against main --> refs/heads/feature-branch-name
+        # Push to main --> refs/heads/main
+        # Tag push --> refs/tags/v1.2.3
+        # => 'startsWith(github.ref, 'refs/tags') returns TRUE only
+        #    when the trigger was a tag push and the step is skipped
+        #    in all other cases.
         if: startsWith(github.ref, 'refs/tags/')
         id: get_version
         run: |
