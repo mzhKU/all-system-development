@@ -23,6 +23,8 @@ import java.util.Map.Entry;
 @EnableScheduling
 public class AlphaVantageClient {
 
+    // comment for dev
+
     private static final Logger logger = LoggerFactory.getLogger(AlphaVantageClient.class);
 
     // This matches the name defined in the Kubernetes Deployment 'env' section
