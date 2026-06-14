@@ -4,11 +4,16 @@ name: Jib Build Docker
 
 run-name: "Github actor ${{ github.actor }} to target ${{ inputs.deploy_target }}"
 
+# another commit
+# more comment
+
 on:
   pull_request:
     branches:
       - main # Run pipeline whenever a PR targets 'main'
   push:
+    branches:
+      - main
     tags:
       - 'v*.*.*' # Runs when a semantic versioning tag is pushed
   workflow_dispatch:
@@ -36,8 +41,17 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Get image version
-        id: get_version
+      - name: Get image version from tag push
+        # 'refs/tags': is a builtin variable that contains the git
+        #              reference of the event that triggered the run.
+        # PR against main --> refs/heads/feature-branch-name
+        # Push to main --> refs/heads/main
+        # Tag push --> refs/tags/v1.2.3
+        # => 'startsWith(github.ref, 'refs/tags') returns TRUE only
+        #    when the trigger was a tag push and the step is skipped
+        #    in all other cases.
+        if: startsWith(github.ref, 'refs/tags/')
+        id: get_version_from_tag_push
         run: |
           VERSION=$(git describe --tags --exact-match 2>/dev/null)
           if [ -z "$VERSION" ]; then
@@ -52,6 +66,22 @@ jobs:
           fi
           echo "skip=false" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get image version from merge to main
+        if: startsWith(github.ref, 'refs/heads/main')
+        id: get_version_from_merge_to_main
+        run: |
+          VERSION=$(git rev-parse --short HEAD)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set version output
+        id: get_version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "version=${{ steps.get_version_from_tag_push.outputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ steps.get_version_from_merge_to_main.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
 
       - name: Cancel if no version
         if: steps.get_version.outputs.skip == 'true'
@@ -70,7 +100,7 @@ jobs:
           mvn verify
 
       - name: Build and push image with Jib
-        if: startsWith(github.ref 'ref/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/main')
         working-directory: av-client
         run: |
           mvn package com.google.cloud.tools:jib-maven-plugin:3.4.0:build \
@@ -84,15 +114,23 @@ jobs:
             -no-transfer-progress
 
       - name: Checkout infra repo
-        if: startsWith(github.ref 'ref/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/main')
         uses: actions/checkout@v5
         with:
           repository: mzhKU/all-system-operation
           ssh-key: ${{ secrets.INFRA_REPO_DEPLOY_KEY }}
           path: infra
 
-      - name: Update image tag in values-ci.yaml
-        if: startsWith(github.ref 'ref/tags/')
+      - name: Update image tag in staging-values-ci.yaml
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          cat > infra/kubernetes/releases/av-client/staging-values-ci.yaml << EOF
+          avClientImage: "ghcr.io/mzhku/av-client"
+          avClientImageTag: "${{ steps.get_version.outputs.version }}"
+          EOF
+
+      - name: Update image tag in dev-values-ci.yaml
+        if: startsWith(github.ref, 'refs/heads/main')
         run: |
           cat > infra/kubernetes/releases/av-client/dev-values-ci.yaml << EOF
           avClientImage: "ghcr.io/mzhku/av-client"
@@ -100,7 +138,21 @@ jobs:
           EOF
 
       - name: Commit and push new tag to infra repo
-        if: startsWith(github.ref 'ref/tags/')
+        if: startsWith(github.ref, 'refs/tags/')
+        working-directory: infra
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add kubernetes/releases/av-client/staging-values-ci.yaml
+          if ! git diff --quiet --exit-code --cached; then
+            git commit -m "ci: update av-client image tag to ${{ steps.get_version.outputs.version }}"
+            git push
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Commit and push new tag to infra repo
+        if: startsWith(github.ref, 'refs/heads/main')
         working-directory: infra
         run: |
           git config user.name "github-actions"
@@ -111,4 +163,4 @@ jobs:
             git push
           else
             echo "No changes to commit"
-          fi
+          fi          
