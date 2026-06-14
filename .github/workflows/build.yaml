@@ -32,6 +32,8 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch tags
+        # CI runners do a shallow clone by default and need tags 
+        # explicitly fetched for git describe to work correctly.
         run: git fetch --tags --force
 
       - name: Set up JDK 17
