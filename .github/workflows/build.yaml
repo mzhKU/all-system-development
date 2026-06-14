@@ -1,5 +1,6 @@
 name: Jib Build Docker
 
+# another comment
 
 run-name: "Github actor ${{ github.actor }} to target ${{ inputs.deploy_target }}"
 
@@ -47,8 +48,7 @@ jobs:
         # Push to main --> refs/heads/main
         # Tag push --> refs/tags/v1.2.3
         # => 'startsWith(github.ref, 'refs/tags') returns TRUE only
-        #    when the trigger was a tag push and the step is skipped
-        #    in all other cases.
+        #    when the trigger was a tag push
         if: startsWith(github.ref, 'refs/tags/')
         id: get_version_from_tag_push
         run: |
