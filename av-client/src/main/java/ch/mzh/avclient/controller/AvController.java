@@ -9,16 +9,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 public class AvController {
-
+    private volatile boolean highTrafficSimulated = false;
     private static final Logger logger = LoggerFactory.getLogger(AlphaVantageClient.class);
     private static String AV_BASE_URL = "https://www.alphavantage.co/";
 
@@ -33,6 +36,23 @@ public class AvController {
     public void error() {
         // comment
         throw new RuntimeException("HTTP 500");
+    }
+
+    @GetMapping("/load")
+    public String toggleLoad(@RequestParam(value = "traffic", defaultValue = "low") String traffic) {
+        if ("high".equalsIgnoreCase(traffic)) {
+            if (highTrafficSimulated) {
+                return "CPU load simulation is already running.";
+            }
+            
+            highTrafficSimulated = true;
+            // Run the heavy CPU load in an asynchronous background thread
+            CompletableFuture.runAsync(this::burnCPU);
+            return "High traffic simulation started. Driving CPU up...";
+        } else {
+            highTrafficSimulated = false;
+            return "Traffic simulation reset to low.";
+        }
     }
 
     @GetMapping("/daily")
@@ -78,4 +98,20 @@ public class AvController {
         // some change
         return ResponseEntity.ok(new DailyTimeSeries(null, null));
     }
+
+    private void burnCPU() {
+        // Run continuous operations while the flag remains true
+        while (highTrafficSimulated) {
+            // Generating random UUIDs and hashing them keeps the CPU intensively busy
+            String stringToHash = UUID.randomUUID().toString();
+            int hashCode = stringToHash.hashCode();
+            
+            // Minor safety break to prevent thread lockup, but keeps CPU usage near maximum
+            if (hashCode == 0) {
+                System.out.println("Collision found");
+            }
+        }
+        System.out.println("Traffic simulation stopped. Thread cooling down.");
+    }
+
 }
