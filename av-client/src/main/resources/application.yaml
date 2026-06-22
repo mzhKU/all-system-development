@@ -11,6 +11,12 @@ server:
 
 
 management:
+  metrics:
+    web:
+      server:
+        request:
+          autotime:
+            enable: true
   endpoints:
     web:
       exposure:
