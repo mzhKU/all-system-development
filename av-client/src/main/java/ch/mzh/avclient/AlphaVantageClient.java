@@ -1,6 +1,5 @@
 package ch.mzh.avclient;
 
-
 import ch.mzh.avclient.domain.DailyTimeSeries;
 import ch.mzh.avclient.domain.MetaData;
 import ch.mzh.avclient.domain.OpenHighLowCloseVolume;
@@ -23,7 +22,7 @@ import java.util.Map.Entry;
 @EnableScheduling
 public class AlphaVantageClient {
 
-    // comment for dev
+    // is the action triggered when the MR is opened, or when the MR is merged?
 
     private static final Logger logger = LoggerFactory.getLogger(AlphaVantageClient.class);
 
