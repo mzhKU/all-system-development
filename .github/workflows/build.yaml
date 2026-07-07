@@ -10,12 +10,12 @@ run-name: "Github actor ${{ github.actor }} to target ${{ inputs.deploy_target }
 on:
   pull_request:
     branches:
-      - main # Run pipeline whenever a PR targets 'main'
+      - main # Run pipeline whenever a PR targets 'main' but no build, only runs tests
   push:
     branches:
-      - main
+      - main # --> deploys dev
     tags:
-      - 'v*.*.*' # Runs when a semantic versioning tag is pushed
+      - 'v*.*.*' # Runs when a semantic versioning tag is pushed --> deploys staging
   workflow_dispatch:
 
 jobs:
