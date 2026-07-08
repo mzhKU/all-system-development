@@ -1,14 +1,9 @@
-
-
 spring:
   application:
     name: avclient
 
-
-
 server:
   port: 9091
-
 
 management:
   metrics:
