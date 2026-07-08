@@ -94,7 +94,6 @@ public class AvController {
             logger.error("Failed to fetch data from API: {}", e.getMessage());
         }
 
-        logger.info("AlphaVantage Client initialization logic complete.");
         // some change
         return ResponseEntity.ok(new DailyTimeSeries(null, null));
     }
